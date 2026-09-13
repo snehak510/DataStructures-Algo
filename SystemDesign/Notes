@@ -1,0 +1,51 @@
+Here are 25 patterns and the problems they help solve:
+
+1. Load balancing → Uneven server traffic → High-traffic APIs, checkout systems
+
+2. Caching → Repeated expensive reads → News feeds, product catalogues
+
+3. CDN → Slow global delivery → Video streaming, image hosting
+
+4. Database sharding → One database cannot scale → Messages, user activity
+
+5. Replication → Availability and read scale → Catalogues, reporting systems
+
+6. Consistent hashing → Excessive data movement → Distributed caches, storage nodes
+
+7. Batch processing → Large scheduled workloads → Billing, daily analytics
+
+8. Stream processing → Real-time event handling → Fraud detection, live tracking
+
+9. Message queues → Sudden traffic spikes → Emails, video processing
+
+10. Publish-subscribe → Many consumers need updates → Alerts, live scores
+
+11. Event-driven architecture → Tightly coupled services → Orders, ride tracking
+
+12. CQRS → Different read-write demands → Ledgers, order histories
+
+13. Event sourcing → Complete change history → Transactions, audit logs
+
+14. Saga pattern → Cross-service transactions → Travel booking, food delivery
+
+15. Transactional outbox → Database updated, event lost → Payments, order notifications
+
+16. Idempotency → Duplicate actions during retries → Payments, webhook processing
+
+17. Rate limiting → Too many requests → Login attempts, public APIs
+
+18. Circuit breaker → Failing downstream dependency → Payments, recommendation services
+
+19. Retry with backoff → Temporary service failures → External APIs, cloud storage
+
+20. Backpressure → Consumers cannot keep up → Log ingestion, streaming analytics
+
+21. Leader election → Multiple nodes competing → Schedulers, partition ownership
+
+22. Distributed locking → Conflicting concurrent updates → Seat booking, inventory
+
+23. Fan-out strategies → Distributing updates at scale → Social feeds, notifications
+
+24. Search indexing → Slow text discovery → Product search, document search
+
+25. Geospatial indexing → Finding nearby entities → Drivers, restaurants, deliveries

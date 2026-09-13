@@ -1,0 +1,81 @@
+Payment Gateway Design
+
+1. Payment gateway - tokenizes - orchestrator
+2. paymnt processor - moves the money
+
+
+Functional Requirement
+
+1. the buy now redirectes to payment gateway page
+2. PCI compliant data
+3. give transaction status
+
+No Functional
+
+1. Scale - 10k TPS
+2. CAP theorem --  consitency >>> availability
+3. Latency - <200ms response for payment authorization
+4. Security - PCI DSS compliance
+
+
+---------------------------------------------------------------------
+
+Entity 
+
+1. Merchant/client
+2. transaction
+3. PaymentMethod
+4. Customer/Users
+5. Webhook Events
+6. Payment Sessions
+
+----------------------------------------------------------------------------
+
+API Designing
+
+1. Client  -> payment intent -> paymnt gateway (with session with timer)
+
+POST   v1/payment-intents
+POST   v1/payment-sessions
+POST   v1/checkout/pay
+GET    v1/payments/{payment_id}
+
+
+----------------------------------------------------------------------------
+
+client -> payment intent id (transaction id) -> 
+
+1. create paymemy intent 
+2. return intent id
+3. show payment page 
+4. user enter details
+5. click pay now
+6. call is passed to payment processors
+
+----------------------------------------------------------------------------
+
+
+payment Intent DB
+
+1. payment intent id
+2. amt
+3. currency
+4. merchant
+5. customer
+6. order_id
+7. payment_method_type
+8. metadata
+
+
+checkkout service give
+
+{
+	"session_id":
+	"redirect_url":
+}
+
+
+tokenizer 
+
+
+
