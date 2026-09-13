@@ -1,0 +1,8 @@
+Undirected cycle → visited + parent
+Directed cycle   → pathVisited 
+Dependencies     → Topological Sort
+Unweighted       → BFS
+Positive weights → Dijkstra
+Extra edge       → DSU
+
+

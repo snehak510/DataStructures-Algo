@@ -1,0 +1,100 @@
+Rate Limiter
+
+Functional Requirement
+1. Limit the number of request by the user
+2. Configurable by the admin
+3. whenever the limit exceed give 429.
+4. handle burst traffic
+5. Support application tier
+
+Non Functional
+0. Scale - 1M rps
+1. CAP theorem - availability >> consistency ( configurations can slowly apply)
+2. Low latency < 5 ms per req
+
+------------------------------------------------------------------
+
+Core entity
+
+1. rateLimitPolicy/rules
+2. client
+3. requestCounter
+
+-----------------------------------------------------------
+
+REST APIs
+
+Admin
+
+Create rules : POST   /v1/admin/rules
+GET   v1/admin/rules?clientId=xyz
+GET   v1/admin/rate-limit/metrics?resource={url}
+
+Response
+
+429
+x-rate-limit : 100
+x-ratelimit-remaining :
+x-ratelimit-reset: 17123456
+Retry-after: 20
+
+
+----------------------------------------------------------------------
+
+client -> Load bolancer  + API Gateway (RL) -> backend mvc
+
+places to put a RL
+1. client side
+2. reverse proxy
+3. API Gateway
+4. backend microservices
+5. dedicated service
+6. Database layer
+
+
+client -> LB -> API Gateway (auth check , call RL, if allowed -> service or else 429)
+
+
+Multiple instances of API gateway and RL -> redis cache
+
+
+----------------------------------------------------------------------
+
+rate limiter rules
+
+- rule_id
+- subject_type (USER_ID, API_KEY, IP, TIER, GLOBAL)
+- subject_value (user_123, api_456)
+- endpoint (*)
+- algorithm (token bucket, fixed window, sliding window)
+- request_limit
+- window_sec
+- burst_capacity
+-  refill rate
+- enforce_by (USER_ID, API_KEY, TENANT)
+- is_active
+- created_at
+- updated_at
+- metadata
+
+
+-----------------------------------------------------------------------
+
+
+1. fixed window counter - only n request are allowed in t sec and it resets to 0
+   - cannot support burst load
+2. Sliding window Log - when a request is made then time is attched and its queued, total number of request in 10 sec of silding exceeds or not. basically impl queuing
+    - keep track of time and then queuing . so increase in memory leading to slowness
+3. Sliding window counter - need not have queue or  timestamp. on moedal we should accept or not
+divide the windows into parts and check the previous contribution and how many more we can accomodate
+4. Token bucket - bucket is filled with token - total num supported, refill/sec  
+5. leaky bucket - place it in the queue and then consumer will consume and their will be drain/sec
+ -- latency
+ -- uniform rate of consumption 
+
+
+ ---------------------------------------------------------------------------
+
+ use strategy design pattern
+
+ 

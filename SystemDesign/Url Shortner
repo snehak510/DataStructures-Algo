@@ -1,0 +1,106 @@
+Url Shortner
+
+Functional requirement
+1. create short url from long url
+	- custom url
+	- expiration date
+2. User should get redirected to the original url from short url
+
+Non functional 
+1. Low latency - where ? creation or redirection?
+   - within what time ? ~200ms
+2. Scale - 100M DAU / 1B url
+3. shorten url should be unique
+4. CAP theorem in distributed system. - highly available >>> consistency
+	-- because only one user can access a url and if its share with others then also it will not make the   	
+	-- Eventual consistent system -> becomes consistent with a delay
+
+---------------------------------------------------------------------------------------
+
+1. Idenitify Entity 
+	- short url
+	- long url
+	- user	
+
+---------------------------------------------------------------------------------------
+
+API Design
+
+1. POST - /v1/url  -> shorturl
+{
+	longURL,
+	customURL,
+	expirationDate
+}
+
+
+GET - vq/url/{shortURL} -> longURL
+
+---------------------------------------------------------------------------------------
+
+HIGH LEVEL DESIGN
+
+  client --> server (generate short url) ---> Database
+
+  redirect 
+
+  if the short form of the url is hit then it hits the server and check for the long form in the database and if it exists this it returns it the response.
+
+
+---------------------------------------------------------------------------------------
+
+
+  TABLE
+
+  user 
+  - metadata
+
+  URL 
+  - shortURL
+  - longURL
+  - expirationDate
+  - customURL
+
+---------------------------------------------------------------------------------------
+
+1. Encryption logic
+	-- use free lib
+	-- Md5/sh1/base64
+
+  take first 6 char of md5 and check if that exists in the db or not
+  if it does then apend some string and then encrypt
+
+ but not sure of how many collision will happen which will increase the latency
+ 
+
+2. counter
+
+ keep a counter var which will increse with every hit.
+
+  1. horizontal scaling 
+  2. vertical scaling  - this one
+
+
+ clinet -> Load balancer -> 3 server -> database
+ 
+ keep the counter in global variable in cache - redis
+
+ cannot scale if try to encrypt and decrypt in the same server.
+
+ encryption - 20%
+ decryption - 80%
+
+  -- have one encryption server
+  -- have decryption server  - use cache
+
+
+  client  --> load balancer ----> encryption server --> cache counter --> db
+  							----> decryption --> cache counter --> db
+
+
+
+ Zookeeper
+ saves data like a directory
+ save counter in zookeeper
+
+ -- timestamp + worker + counter 							
