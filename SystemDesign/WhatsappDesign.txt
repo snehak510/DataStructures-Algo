@@ -1,0 +1,68 @@
+Design Whatsapp
+
+Functional requirement
+
+1. start group chat (group of 2 or many)
+2.send/recieve messages
+3. send/receive media
+4. Access message after I have been offline
+
+Non Functional requirement
+
+1. Deleivered with low latency < 500ms
+2. Guarantee delivery message
+3. Billion of users, high throughput
+4. messages not stored unnecssarily
+5. Fault tolerant
+
+Core entities
+Users
+Chat
+Messages
+Client
+
+API Design
+createChat
+sendMessage
+createAttachment
+modifyParticpants
+
+
+Design
+
+Client -> web server -> chat Server -> dynamo DB
+									-> Blob
+
+chat
+id
+name
+metadata
+
+chatParticipant
+chatId
+participantId
+
+
+clientA : WS1
+clientB : SW2
+
+once the chat is sent, look for participantId from the table 
+and then search for web socket id for the participants and send the message to that websocket
+Here we need not store the message
+
+Attachment
+data 
+
+client asks for a upload url to vhat server.
+client upload to S3 which will have a url and url is snt to the client back to the reciever
+
+
+Messages
+id
+contents
+creator id
+timestamp
+
+Inbox
+recipientId
+MessageId
