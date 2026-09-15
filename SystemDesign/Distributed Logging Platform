@@ -1,0 +1,82 @@
+Distributed Logging Platform
+
+Functional Requirement
+
+0. Ingest from multiple source
+1. Realtime 
+2. Batch jobs 
+3. valid and parse to a standard format
+4. Dashboard
+
+non functional
+
+1. Scale - million events per hour
+2. latency
+3. CAP availability >> consistench
+4. reliability - no data loss
+
+
+--------------------------------------------------------------
+
+Log4j -> standard I/O (stdout, stderr) -> raw.logs -> fluentbit -> splunk
+
+
+--------------------------------------------------------------
+
+Core entity
+
+1. LogEvent (Actual log)
+2. IngestionJob
+3. Source/Agent
+
+--------------------------------------------------------------
+
+Clients -> LB & API Gateway ---> client onboarding srv  --> client DB
+							---> Ingestion svc  --> Kafka --> Apache flik (sanitize + normalization + parse + enrich + dedupe) --> Log DB   
+							----> search --> Kafka  ---> LogDb
+
+
+Client DB (postgres)
+	- clientId
+	- clientName
+	- Token
+	- Token TTL
+	- env
+	- metadata
+
+
+
+chose write heavy database (cassandra DB)
+
+log DB schema
+
+kafka topic : raw_logs
+
+Apache flink will save to elastic search and log DB
+last 14 days in elastic search
+more than 14 dbs in log DB (cassandra)
+			  (validate + normalize + )
+
+
+schema DB
+
+loges_by_level
+- log_level
+- log date
+- timestamp
+- log id
+- service name
+- message
+
+
+logs_by_traceId
+- trace_id
+- timestamp
+- log_id
+- service_name
+- log_level
+- message
+
+run cron job to delete the old data but we shouldnt hard delete 
+soft delete so the blob storage or file based will store all the data could be S3 as well. (cold storage)	
+TTL in elastic search		  

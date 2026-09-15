@@ -1,0 +1,110 @@
+Notification System
+
+Functional requirement
+
+1. Support multiple delivery channel (email, SMS, push notification, in app)
+2. Create, update, manage notification template with dynamic content
+3. Allow users to configure notification preferences per channel and type
+4. Support immediate and scheduled notification delivery
+5. track delivery status
+
+Non Functional Requirement
+
+1. Scale : 1M+ notifications/min
+2. CAP availability >> consistency
+3. Latency <5-10s (for promo delay fine -> for otp should be realtime)
+
+
+--------------------------------------------------------------
+
+Core Entity
+
+1. User + client
+2. Notification preference
+3. Notification content 
+4. Template
+5. delivery status
+
+--------------------------------------------------------------
+
+API Design
+
+- POST api/v1/notifications (templateId, recipientId, variables, channels)
+- GET api/v1/notifications/{notificationId}/status
+
+Template Design
+
+- POST api/v1/templates
+- GET api/v1/templates/{templateId}/{version}
+
+User preference
+
+- PUT api/v1/preferences
+
+{ "externalUserId" : "1234",
+   "clientUd" : "Uber",
+   "preference" : {
+   "email" : true;
+   "sms" : false
+   "inApp" : true
+   }
+ }
+
+------------------------------------------------------
+HLD 
+
+client -> API Gateway & LB --> Template svc -> template DB
+						   ---> User preference svc --> userpref Db
+						   ---> Notification svc ->kafka -> notifcation svc 3rd party provider
+
+
+Notification provider
+A third party application. ( event, SMS, in app)
+
+
+Use pub-sub
+
+topics name
+
+notification.critical.email
+notification.critical.sms
+notification.critical.push
+
+notification.stand.email
+notification.stand.sms
+notification.stand.push
+
+notifications.promotional.email
+notifications.promotional.sms
+notifications.promotional.push
+
+notifcation.bulk.email
+notification.retry
+notification.dlq - check manual
+
+
+
+
+
+Templates schema
+
+- template_id
+- name
+- type (transactional/promo)
+- channel
+- content
+- varaibles
+- version
+- is_active
+- created_at
+- updated_at
+
+
+
+user_prefernce (postgre)
+1. id
+2. client_id
+3. external_user_id
+4. preference (email, msg)
+5. updated_at
+
