@@ -53,7 +53,7 @@ words[i] consists of only lowercase English letters.
 
 ------------------------------------------------------------------------------
 
-Time and space complexity - O(N + K) & O(n)
+Time and space complexity -  & O(n)
 
 class Solution {
     public String foreignDictionary(String[] words) {
