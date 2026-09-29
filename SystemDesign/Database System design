@@ -1,0 +1,51 @@
+Database System design
+
+1. Relational / SQL databases
+
+Store data in tables (rows + columns) and usually use SQL.
+- PostgreSQL
+- MySQL
+- Oracle
+- SQL Server
+Good for: transactions, strong consistency, structured data.
+
+2. NoSQL databases
+
+NoSQL databases are generally used when you need flexible schemas, very high scale, or specialized access patterns.
+
+- Key-value
+  1. Redis
+  2. Amazon DynamoDB
+
+Good for: caching, sessions, simple lookups.
+
+- Document Database
+Stores JSON-like documents.
+
+  1. MongoDB
+  2. Couchbase  
+
+Good for: flexible/semi-structured data.
+
+- Wide-Column/Column-Family
+Data is organized around column families.
+
+1. Cassandra
+2. HBase
+
+Good for: massive-scale distributed systems and high write throughput.
+
+- Graph Database
+Stores nodes + relationships.
+
+1. Neo4j
+2. Amazon neptune
+
+- Time-Series databases
+Optimized for data indexed by time.
+
+1. InfluxDB
+2. TimescaleDB  
+
+
+
