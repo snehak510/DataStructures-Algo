@@ -1,0 +1,132 @@
+
+You are building a versioned datastore. You are given two APIs.
+
+PUT(docId int, contents string, timestamp int) -> This will save the contents of that docId for that timestamp. There can be more than one call for a doc ID with differing timestamp, so we would essentially need to store versions for a given docId.
+GET(docId int, timestamp int) -> For the timestamp in input, return the content of that docId for the version just before the timestamp. If there is no content, return an empty string.
+The timestamp for PUT calls can be unordered. For eg.
+PUT(1, "abc", 10)
+PUT(2, "bcd", 11)
+PUT(1, "cde", 8)
+PUT(2, "def", 9)
+
+GET(1, 5) -> ""
+GET(1, 9) -> "cde"
+GET(2, 15) -> "bcd"
+
+---------------------------------------------------------
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class VersionedDataStore {
+
+    static class Node {
+        int timestamp;
+        String contents;
+        Node left;
+        Node right;
+
+        Node(int timestamp, String contents) {
+            this.timestamp = timestamp;
+            this.contents = contents;
+        }
+    }
+
+    // docId -> root of BST for that document
+    private final Map<Integer, Node> documents = new HashMap<>();
+
+    // PUT(docId, contents, timestamp)
+    public void put(int docId, String contents, int timestamp) {
+
+        Node root = documents.get(docId);
+
+        root = insert(root, timestamp, contents);
+
+        documents.put(docId, root);
+    }
+
+    private Node insert(Node root, int timestamp, String contents) {
+
+        // First version for this document
+        if (root == null) {
+            return new Node(timestamp, contents);
+        }
+
+        if (timestamp < root.timestamp) {
+
+            root.left = insert(
+                    root.left,
+                    timestamp,
+                    contents
+            );
+
+        } else if (timestamp > root.timestamp) {
+
+            root.right = insert(
+                    root.right,
+                    timestamp,
+                    contents
+            );
+
+        } else {
+            // Same docId + same timestamp.
+            // Assuming latest PUT overwrites the previous value.
+            root.contents = contents;
+        }
+
+        return root;
+    }
+
+    // GET(docId, timestamp)
+    // Return content for the largest timestamp <= given timestamp.
+    public String get(int docId, int timestamp) {
+
+        Node root = documents.get(docId);
+
+        if (root == null) {
+            return "";
+        }
+
+        String result = "";
+
+        while (root != null) {
+
+            if (root.timestamp <= timestamp) {
+
+                // Valid candidate.
+                result = root.contents;
+
+                // There may be a larger timestamp
+                // which is still <= target.
+                root = root.right;
+
+            } else {
+
+                // Current timestamp is too large.
+                root = root.left;
+            }
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+
+        VersionedDataStore store = new VersionedDataStore();
+
+        store.put(1, "abc", 10);
+        store.put(2, "bcd", 11);
+        store.put(1, "cde", 8);
+        store.put(2, "def", 9);
+
+        System.out.println(store.get(1, 5));   // ""
+        System.out.println(store.get(1, 9));   // "cde"
+        System.out.println(store.get(2, 15));  // "bcd"
+
+        // Additional tests
+        System.out.println(store.get(1, 8));   // "cde"
+        System.out.println(store.get(1, 10));  // "abc"
+        System.out.println(store.get(1, 100)); // "abc"
+    }
+}
