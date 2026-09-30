@@ -1,0 +1,167 @@
+1.In a network of multiple services, for any service-service communication via APIs, Circuit Breaker should open the circuit and API should failfast if the API error count for last X minutes >= Y. ( 10 minutes and 3 times) [No half open, only open and close] 2.The circuit breaker should be closed and the service should start receiving requests after a cool off period of Z minutes. 3.How can we make this implementation thread-safe ?
+
+
+
+
+------------------------------------------------------------
+
+
+
+"I'll maintain a separate Circuit Breaker for each downstream service/API. The breaker has two states: CLOSED and OPEN.
+
+While CLOSED, requests are allowed. Whenever an API call fails, I'll record its timestamp. Before checking the threshold, I'll remove failures older than the sliding window of 10 minutes.
+
+If there are 3 or more failures in the last 10 minutes, I'll transition the breaker to OPEN.
+
+While OPEN, requests fail fast without calling the downstream service. Once the 10-minute cooldown period has elapsed, I'll transition the breaker back to CLOSED and start allowing requests again."
+
+
+
+allowRequest()
+recordFailure()
+
+
+We need the state transition to be atomic.
+
+"These variables represent one logical state, so I'll protect them with the same lock. The failure insertion, removal of expired failures, threshold check, and state transition need to happen atomically."
+
+That's a strong concurrency explanation.
+
+
+"I'd define which failures contribute to the circuit-breaker threshold. For example, downstream timeouts, connection failures, and 5xx responses might count, while client-side 4xx errors generally shouldn't."
+
+
+Complexity
+
+With the Deque:
+
+Adding failure: O(1)
+Removing expired failures: O(1) amortized
+Checking state: O(1)
+Space: O(number of failures in the 10-minute window)
+
+
+"I'll use a two-state machine, CLOSED and OPEN, as required. I'll maintain failure timestamps in a deque because this is a sliding 10-minute window. On every failure I'll remove expired timestamps, add the current failure, and open the circuit when the count reaches 3. While OPEN, requests fail fast. After the cooldown, the next request transitions the breaker back to CLOSED. For thread safety, I'll synchronize the operations because state, timestamps, and the threshold check form one atomic piece of state."
+
+
+
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public class CircuitBreaker {
+
+    enum State {
+        CLOSED,
+        OPEN
+    }
+
+    private final int failureThreshold;
+    private final long failureWindowMillis;
+    private final long coolOffMillis;
+
+    private State state = State.CLOSED;
+    private long openedAt;
+
+    private final Deque<Long> failureTimes = new ArrayDeque<>();
+
+    public CircuitBreaker(
+            int failureThreshold,
+            long failureWindowMillis,
+            long coolOffMillis) {
+
+        this.failureThreshold = failureThreshold;
+        this.failureWindowMillis = failureWindowMillis;
+        this.coolOffMillis = coolOffMillis;
+    }
+
+    public synchronized boolean allowRequest() {
+
+        if (state == State.CLOSED) {
+            return true;
+        }
+
+        long now = System.currentTimeMillis();
+
+        if (now - openedAt >= coolOffMillis) {
+            state = State.CLOSED;
+            failureTimes.clear();
+            return true;
+        }
+
+        return false;
+    }
+
+    public synchronized void recordFailure() {
+
+        long now = System.currentTimeMillis();
+
+        removeExpiredFailures(now);
+
+        failureTimes.addLast(now);
+
+        if (failureTimes.size() >= failureThreshold) {
+            state = State.OPEN;
+            openedAt = now;
+        }
+    }
+
+    private void removeExpiredFailures(long now) {
+
+        long cutoff = now - failureWindowMillis;
+
+        while (!failureTimes.isEmpty()
+                && failureTimes.peekFirst() < cutoff) {
+
+            failureTimes.pollFirst();
+        }
+    }
+
+    public synchronized State getState() {
+        return state;
+    }
+
+    // ---------------- MAIN ----------------
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // 3 failures within 10 minutes
+        // Cooldown = 5 seconds (for easy testing)
+        CircuitBreaker cb = new CircuitBreaker(
+                3,
+                10 * 60 * 1000L,
+                5 * 1000L
+        );
+
+        // Request 1
+        System.out.println("Request allowed: "
+                + cb.allowRequest());
+
+        // Failure 1
+        cb.recordFailure();
+        System.out.println("State: " + cb.getState());
+
+        // Failure 2
+        cb.recordFailure();
+        System.out.println("State: " + cb.getState());
+
+        // Failure 3 -> circuit should OPEN
+        cb.recordFailure();
+        System.out.println("State after 3 failures: "
+                + cb.getState());
+
+        // Request should fail fast
+        System.out.println("Request allowed: "
+                + cb.allowRequest());
+
+        // Wait for cooldown
+        Thread.sleep(6000);
+
+        // Circuit should become CLOSED
+        System.out.println("Request allowed after cooldown: "
+                + cb.allowRequest());
+
+        System.out.println("Final state: "
+                + cb.getState());
+    }
+}
