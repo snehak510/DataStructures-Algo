@@ -1,0 +1,30 @@
+Wise
+
+R1. Circuit breaker
+
+Circuit Breaker (Multi-Lingual)
+
+Description:
+
+Let's assume we have a web service, called Service A, which handles API requests. Each time an API request is sent to Service A, it makes a request to 2 other services:
+- Service B
+- Service C
+
+If one of Service B or C has a problem, and we keep making API requests to them, it would create extra pressure on the failing service which would only make the problem worse.
+Ideally if we encounter too many failures under a certain period of time, we should block making requests to give time for the service to recover.
+To fix the problem we want you to implement a version of a Web API client that:
+
+When a number of failures happen, we stop making API requests to that service for a while.
+For this problem, we should stop calling a Service if we get 3 failures (e.g: Internal Server Error, Timeout) in last 10 minutes, but after 5 minutes we want to open the calls again to the service.
+
+Example scenario request being made to Service B and Service C:
+
+r2. Crowd funding
+
+Wise wants to raise money by selling some of the company's stocks to its own customers, similar to a "crowdfunding" event.
+Wise plans on raising £100 million by selling 10,000,000 of the company's shares, each worth £10 (the value of each share is fixed).
+Wise customers will have the chance to login to the app/website and buy a selected number of shares using the money they have in their Wise account.
+Each customer has a record of their funds stored in the "Balance Service" which is the source of truth for transactions that affect customers' accounts.
+The "Balance Service" is used to deposit and withdraw money from customers' accounts.
+Design a system that lets users buy a selected number of shares using the money in their Wise accounts, during a limited amount of time (1 week).
+We expect a high amount of concurrent users (e.g. 5 million in 1 hour).

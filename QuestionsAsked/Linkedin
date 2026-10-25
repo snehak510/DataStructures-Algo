@@ -1,0 +1,110 @@
+Linkedin
+
+Screening
+
+1.
+/**
+ * At LinkedIn we use JSON/YAML/HOCON configuration files in many different places to configure our services and applications
+ * (for example what security keys should we use to configure connections to the database?)
+ *
+ * Therefore we have configuration validators that validate that when you change the configuration ... it would correctly comply and, if not,
+ * formed (or you can quite literally take down multiple services).
+ *
+ * This function determines if the parenthesis '(' and ')' in a string are properly matched.
+ * and it ignores non-brace characters.
+ *
+ * Input: [A-Za-z0-9].* String
+ * Output: Boolean
+ *
+ * Some examples:
+ *  "()()()" -> true
+ *  "((45+)a3)" -> true
+ *  "((()()))()" -> false
+ *  ")((("" -> false
+ */
+
+
+
+ 2.
+ /*
+ * This class will be given a list of words (such as might be tokenized
+ * from a paragraph of job text), and will provide a method that takes two
+ * words and returns the shortest distance (in words) between those two
+ * words in the provided text.
+ * Example:
+ * JobDescDistanceFinder finder = new JobDescDistanceFinder(Arrays.asList("the", "java", "skill", "is", "important", "for", "java", ...));
+ * assert(finder.distance("important", "the") == 4);
+ * assert(finder.distance("important", "java") == 2);
+ * assert(finder.distance("java", "doesn'tExist") == -1);
+ * 
+ * Connecting this back to LinkedIn sometimes when we are looking at classifying a job description, we want to know how often two w
+ * each other -- maybe they are relevant to each other!
+ * An example is java and software tend to show up in the same job description quite a bit. We can use this metric as a useful sea
+ * finding jobs that are close to the initial input query from
+ * the user.
+ */
+
+
+
+ Round 2
+
+ Given the sorted Lists of positive integer, find the first k pairs with the smallest product.
+ Given [1,2,5,9] & [1,3,4,6] for k = 5the result should be [1,1], [2,1],[1,3],[1,4],[5,1]
+
+ Round 3
+
+ AI round
+
+ Part 1: Implement the Basic Mutual Connections Algorithm
+
+You are given a minimal social graph analyzer with a placeholder implementation. The current code has a basic structure but the core mutual connections algorithm is not implemented.
+
+Task: Implement the findmutualfriends method to:
+- Build an adjacency list representation of the social graph[span_0](start_span)[span_0](end_span)
+- Find all users who are direct friends with both user A and user B[span_1](start_span)[span_1](end_span)
+- Return the list of mutual friend user IDs[span_2](start_span)[span_2](end_span)
+- Handle edge cases like users with no mutual friends[span_3](start_span)[span_3](end_span)
+
+
+Part 2: Optimization and Edge Cases
+
+After the basic implementation is working, focus on optimization and handling edge cases.
+
+Task: Optimize your solution for:
+1. Optimal Time Complexity: Ensure the algorithm achieves O(min(deg(A), deg(B))) for mutual friends[span_4](start_span)[span_4](end_span).
+
+Edge Cases: Handle boundary conditions and error cases such as:
+- Users that don't exist in the graph[span_5](start_span)[span_5](end_span)
+- Users with no friends[span_6](start_span)[span_6](end_span)
+- Self-connections (user A = user B)[span_7](start_span)[span_7](end_span)
+- Invalid user IDs (negative numbers, non-integers)[span_8](start_span)[span_8](end_span)
+- Empty friendship lists[span_9](start_span)[span_9](end_span)
+- Disconnected users[span_10](start_span)[span_10](end_span)
+
+
+Part 3: Friends-of-Friends Connections
+
+Extend the system to find friends-of-friends connections.
+
+Task: Implement the findtwohop_connections method to find users who are friends-of-friends for both user A and user B[span_11](start_span)[span_11](end_span).
+
+
+Part 4: Shortest Path Distance
+
+Implement a method to calculate the "distance" between two users in the social graph.
+
+Task: Implement the calculate_distance method to find the shortest path length between two users[span_12](start_span)[span_12](end_span).
+
+
+Part 5: Friend Recommendation System
+
+Implement a friend recommendation system that suggests potential connections based on mutual friends.
+
+Task: Implement the recommend_friends method to recommend friends based on the highest number of mutual connections[span_13](start_span)[span_13](end_span).
+
+
+Round 4
+
+Linkedin allows users to share articles from 3rd party sites with their connections. Assume all share actions go Linkedin site (served by multiple servers in geographically diverse regions). Design a system to aggregate in articles over the last 5 mins, last hour and last day
+
+

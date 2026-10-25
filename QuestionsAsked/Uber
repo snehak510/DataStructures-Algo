@@ -1,0 +1,48 @@
+Uber
+
+
+R1.
+
+Minimize Rope connection cost
+
+Given an array arr[i] of rope lengths, connect all ropes into a single rope with the minimum total cost. The cost to connect two ropes is the sum of their lengths. Return the minimum possible cost.
+
+
+R2.
+
+Problem : Thread Safe in memory file system qith wildcard search.
+Implement File system with :
+
+mkdir(path) - create dirs recursively
+addFile(filePath, content) - create/append file, auto create parent dirs
+readFile(filePath) - return content
+ls(path) - if file -> [fileName] : if dir -> sorted immediate childern
+search(pattern) - return matching file path supports _ (any sequence) ? (single)
+find("/a/b/_.txt") - ["a/b/c.txt", "a/b/d.txt"]
+find("/a/b/?.txt") - ["a/b/c.txt", "a/b/d.txt"]
+Assume there will only one special/regex char and that too in the last part
+
+Requirements : thread safe (optimized for reads), efficienmt search (avoid full scan)
+
+
+R3.
+
+Cyrpto tax lot calculation
+
+crypto tax lot engine & automated reporting
+You are building a backend servicr for a crypto tax platfor,. we receiev transaction events (BUYS and SELLS) via a webhook from the external exchange.
+
+Payload:
+{
+	"user_id": "usr_123",
+	"transaction_id": "tx_abc",
+	"type": "SELL",
+	"asset": "BTC",
+	"amount": 0.50,
+	"price_usd": 65000.00,
+	"timestamp": "2026-03-15T14:30:00Z"
+}
+
+Requirements:
+1. Ingest transaction (BUYS and SELLS)
+2. calculate Gains/Losses: when a SELL occurs, you must dissolve the user's existing BUY lots to calculate the capital gain or loss. Users can choose between FIFO or LIFO

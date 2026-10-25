@@ -1,0 +1,12 @@
+Atlassian R1
+
+
+1. Fetch URLs with GET Requests
+
+write the code that given the list of URLs, will return the corresponding response bodies for the GET requests to these URLs. Please feel free to use an HTTP client library, either included with your programming language of choice or a third-party one.
+
+HLD 
+
+Transform PoC URL fetcher to production
+
+Please descrive your steps to transform the PoC URL fetcher into a customer facinf API based production service that handles millions of page fetches per day
