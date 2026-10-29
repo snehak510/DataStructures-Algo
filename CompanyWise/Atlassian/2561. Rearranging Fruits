@@ -1,0 +1,114 @@
+2561. Rearranging Fruits
+
+You have two fruit baskets containing n fruits each. You are given two 0-indexed integer arrays basket1 and basket2 representing the cost of fruit in each basket. You want to make both baskets equal. To do so, you can use the following operation as many times as you want:
+
+Choose two indices i and j, and swap the ith fruit of basket1 with the jth fruit of basket2.
+The cost of the swap is min(basket1[i], basket2[j]).
+Two baskets are considered equal if sorting them according to the fruit cost makes them exactly the same baskets.
+
+Return the minimum cost to make both the baskets equal or -1 if impossible.
+
+ 
+
+Example 1:
+
+Input: basket1 = [4,2,2,2], basket2 = [1,4,1,2]
+Output: 1
+Explanation: Swap index 1 of basket1 with index 0 of basket2, which has cost 1. Now basket1 = [4,1,2,2] and basket2 = [2,4,1,2]. Rearranging both the arrays makes them equal.
+Example 2:
+
+Input: basket1 = [2,3,4,1], basket2 = [3,2,5,1]
+Output: -1
+Explanation: It can be shown that it is impossible to make both the baskets equal.
+ 
+
+Constraints:
+
+basket1.length == basket2.length
+1 <= basket1.length <= 105
+1 <= basket1[i], basket2[i] <= 109
+
+--------------------------------------------------
+
+The key idea is to make the two baskets contain the same multiset of fruit costs using swaps of minimum total cost.
+
+You can swap one fruit from basket 1 with one from basket 2. The cost of a swap is the minimum of the two fruit costs.
+
+The important observation is that we don't need to try every possible swap. We can count fruit frequencies, identify which fruits are in excess in each basket, and then pair the excess fruits in the cheapest possible order.
+Approach step by step
+1. Count the frequencies
+For every fruit cost, count its occurrences in both baskets. If the combined frequency of any fruit is odd, return -1, because the two baskets cannot end up equal. 
+LeetCode Wiki+1
+
+2. Find the extra fruits
+For each cost \(x\), calculate:
+\[
+diff = freq_1(x)-freq_2(x)
+\]
+
+- If diff > 0, basket 1 has diff / 2 extra copies.
+- If diff < 0, basket 2 has -diff / 2 extra copies.
+Collect these extra fruits into a list. We need to swap half of the mismatched occurrences.
+3. Minimize the swap cost
+Let globalMin be the cheapest fruit across both baskets.
+
+For each required swap, compare:
+- Direct swap: cost is \(\min(a,b)\).
+- Indirect swap: use the globally cheapest fruit as an intermediary, costing \(2 \times globalMin\).
+Therefore, the minimum cost per pair is:
+\[
+\min(a,b,2\times globalMin)
+\]
+
+Sort the extra fruits and calculate this cost for each pair.
+
+
+-----------------------------------------------------------
+
+
+
+import java.util.*;
+
+class Solution {
+    public long minCost(int[] basket1, int[] basket2) {
+        Map<Integer, Integer> diff = new HashMap<>();
+        int globalMin = Integer.MAX_VALUE;
+
+        for (int x : basket1) {
+            diff.put(x, diff.getOrDefault(x, 0) + 1);
+            globalMin = Math.min(globalMin, x);
+        }
+
+        for (int x : basket2) {
+            diff.put(x, diff.getOrDefault(x, 0) - 1);
+            globalMin = Math.min(globalMin, x);
+        }
+
+        List<Integer> extra = new ArrayList<>();
+
+        for (Map.Entry<Integer, Integer> entry : diff.entrySet()) {
+            int d = entry.getValue();
+
+            if (d % 2 != 0) return -1;
+
+            for (int i = 0; i < Math.abs(d) / 2; i++) {
+                extra.add(entry.getKey());
+            }
+        }
+
+        Collections.sort(extra);
+
+        long cost = 0;
+
+        for (int i = 0; i < extra.size() / 2; i++) {
+            cost += Math.min(extra.get(i), 2 * globalMin);
+        }
+
+        return cost;
+    }
+}
+
+
+Why only half the sorted list? Each fruit value's imbalance is already divided by two when we build extra. Each required swap corrects two mismatched occurrences, and the sorted list contains one entry per required swap. We use its first half because pairing the cheapest half against the most expensive half gives the optimal greedy cost.
+
+Complexity: \(O(n\log n)\) time and \(O(n)\) space, where \(n\) is the size of each basket.

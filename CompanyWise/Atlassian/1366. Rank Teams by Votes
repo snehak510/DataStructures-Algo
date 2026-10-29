@@ -1,0 +1,105 @@
+1366. Rank Teams by Votes
+
+
+In a special ranking system, each voter gives a rank from highest to lowest to all teams participating in the competition.
+
+The ordering of teams is decided by who received the most position-one votes. If two or more teams tie in the first position, we consider the second position to resolve the conflict, if they tie again, we continue this process until the ties are resolved. If two or more teams are still tied after considering all positions, we rank them alphabetically based on their team letter.
+
+You are given an array of strings votes which is the votes of all voters in the ranking systems. Sort all teams according to the ranking system described above.
+
+Return a string of all teams sorted by the ranking system.
+
+ 
+
+Example 1:
+
+Input: votes = ["ABC","ACB","ABC","ACB","ACB"]
+Output: "ACB"
+Explanation: 
+Team A was ranked first place by 5 voters. No other team was voted as first place, so team A is the first team.
+Team B was ranked second by 2 voters and ranked third by 3 voters.
+Team C was ranked second by 3 voters and ranked third by 2 voters.
+As most of the voters ranked C second, team C is the second team, and team B is the third.
+Example 2:
+
+Input: votes = ["WXYZ","XYZW"]
+Output: "XWYZ"
+Explanation:
+X is the winner due to the tie-breaking rule. X has the same votes as W for the first position, but X has one vote in the second position, while W does not have any votes in the second position. 
+Example 3:
+
+Input: votes = ["ZMNAGUEDSJYLBOPHRQICWFXTVK"]
+Output: "ZMNAGUEDSJYLBOPHRQICWFXTVK"
+Explanation: Only one voter, so their votes are used for the ranking.
+ 
+
+Constraints:
+
+1 <= votes.length <= 1000
+1 <= votes[i].length <= 26
+votes[i].length == votes[j].length for 0 <= i, j < votes.length.
+votes[i][j] is an English uppercase letter.
+All characters of votes[i] are unique.
+All the characters that occur in votes[0] also occur in votes[j] where 1 <= j < votes.length.
+
+
+----------------------------------------------------------
+
+
+
+
+class Solution {
+    public String rankTeams(String[] votes) {
+        int n = votes[0].length();
+
+        int[][] counts = new int[26][n];
+
+        // Count votes at every position
+        for (String vote : votes) {
+            for (int i = 0; i < n; i++) {
+                char team = vote.charAt(i);
+                counts[team - 'A'][i]++;
+            }
+        }
+
+        // Collect teams
+        Character[] teams = new Character[n];
+
+        for (int i = 0; i < n; i++) {
+            teams[i] = votes[0].charAt(i);
+        }
+
+        // Sort teams using ranking rules
+        Arrays.sort(teams, (a, b) -> {
+            for (int i = 0; i < n; i++) {
+                if (counts[a - 'A'][i] != counts[b - 'A'][i]) {
+                    return counts[b - 'A'][i]
+                         - counts[a - 'A'][i];
+                }
+            }
+
+            return a - b;
+        });
+
+        StringBuilder result = new StringBuilder();
+
+        for (char team : teams) {
+            result.append(team);
+        }
+
+        return result.toString();
+    }
+}
+
+
+Let \(V\) be the number of voters and \(T\) the number of teams.
+- Counting votes: (O(V times T))
+- Sorting teams: (O(T^2 log T)), because each comparison may inspect all \(T\) positions.
+- Space: \(O(26T)\) for the count array, plus \(O(T)\) for the team array.
+
+
+“I’ll use a 2D array counts[team][position] to store how many votes each team receives at every rank. I’ll iterate through all votes and populate this array.
+
+Then, I’ll sort the teams using a custom comparator: compare their first-place vote counts, then second-place counts, and so on. The team with more votes at the first differing position ranks higher. If all counts are equal, I’ll use alphabetical order.
+
+The time complexity is \(O(VT + T^2 \log T)\), where \(V\) is the number of voters and \(T\) is the number of teams.”

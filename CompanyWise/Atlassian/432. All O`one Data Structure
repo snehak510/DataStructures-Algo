@@ -1,0 +1,184 @@
+432. All O`one Data Structure
+
+
+Design a data structure to store the strings' count with the ability to return the strings with minimum and maximum counts.
+
+Implement the AllOne class:
+
+AllOne() Initializes the object of the data structure.
+inc(String key) Increments the count of the string key by 1. If key does not exist in the data structure, insert it with count 1.
+dec(String key) Decrements the count of the string key by 1. If the count of key is 0 after the decrement, remove it from the data structure. It is guaranteed that key exists in the data structure before the decrement.
+getMaxKey() Returns one of the keys with the maximal count. If no element exists, return an empty string "".
+getMinKey() Returns one of the keys with the minimum count. If no element exists, return an empty string "".
+Note that each function must run in O(1) average time complexity.
+
+ 
+
+Example 1:
+
+Input
+["AllOne", "inc", "inc", "getMaxKey", "getMinKey", "inc", "getMaxKey", "getMinKey"]
+[[], ["hello"], ["hello"], [], [], ["leet"], [], []]
+Output
+[null, null, null, "hello", "hello", null, "hello", "leet"]
+
+Explanation
+AllOne allOne = new AllOne();
+allOne.inc("hello");
+allOne.inc("hello");
+allOne.getMaxKey(); // return "hello"
+allOne.getMinKey(); // return "hello"
+allOne.inc("leet");
+allOne.getMaxKey(); // return "hello"
+allOne.getMinKey(); // return "leet"
+ 
+
+Constraints:
+
+1 <= key.length <= 10
+key consists of lowercase English letters.
+It is guaranteed that for each call to dec, key is existing in the data structure.
+At most 5 * 104 calls will be made to inc, dec, getMaxKey, and getMinKey.
+
+
+-----------------------------------------------------------------------
+
+
+Approach: HashMap + Doubly Linked List
+1. Use a HashMap: Map each key to the bucket containing its current count, so we can find it in \(O(1)\).
+
+2. Create count buckets: Each bucket stores a count and a HashSet of keys with that count.
+
+3. Maintain a sorted doubly linked list: Keep buckets in ascending order of count, with head pointing to the minimum count and tail to the maximum.
+
+4. inc(key):
+- If the key is new, place it in the count-1 bucket.
+- Otherwise, move it to the next bucket with count + 1, creating that bucket if necessary.
+- Remove the old bucket if it becomes empty.
+5. dec(key):
+- Move the key to the previous bucket with count − 1.
+- If its count becomes zero, remove the key entirely.
+- Remove any empty bucket.
+6. Get minimum and maximum: Return any key from the first or last bucket, respectively.
+
+Why this works: Counts change by exactly one, so we only need to check neighboring buckets rather than search the list.
+
+Complexity: All four operations — inc, dec, getMinKey, and getMaxKey — take \(O(1)\) average time.
+
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+import java.util.*;
+
+class AllOne {
+
+    class Bucket {
+        int count;
+        Set<String> keys;
+        Bucket prev, next;
+
+        Bucket(int count) {
+            this.count = count;
+            this.keys = new HashSet<>();
+        }
+    }
+
+    private Map<String, Bucket> keyBucket;
+    private Bucket head, tail;
+
+    public AllOne() {
+        keyBucket = new HashMap<>();
+
+        head = new Bucket(0);
+        tail = new Bucket(0);
+
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    public void inc(String key) {
+        if (!keyBucket.containsKey(key)) {
+            // New key starts with count 1
+            Bucket first = head.next;
+
+            if (first == tail || first.count != 1) {
+                Bucket bucket = new Bucket(1);
+                insertAfter(head, bucket);
+                first = bucket;
+            }
+
+            first.keys.add(key);
+            keyBucket.put(key, first);
+        } else {
+            Bucket curr = keyBucket.get(key);
+            Bucket next = curr.next;
+            int newCount = curr.count + 1;
+
+            if (next == tail || next.count != newCount) {
+                Bucket bucket = new Bucket(newCount);
+                insertAfter(curr, bucket);
+                next = bucket;
+            }
+
+            next.keys.add(key);
+            keyBucket.put(key, next);
+
+            curr.keys.remove(key);
+            removeIfEmpty(curr);
+        }
+    }
+
+    public void dec(String key) {
+        Bucket curr = keyBucket.get(key);
+
+        if (curr.count == 1) {
+            keyBucket.remove(key);
+            curr.keys.remove(key);
+            removeIfEmpty(curr);
+            return;
+        }
+
+        int newCount = curr.count - 1;
+        Bucket prev = curr.prev;
+
+        if (prev == head || prev.count != newCount) {
+            Bucket bucket = new Bucket(newCount);
+            insertAfter(curr.prev, bucket);
+            prev = bucket;
+        }
+
+        prev.keys.add(key);
+        keyBucket.put(key, prev);
+
+        curr.keys.remove(key);
+        removeIfEmpty(curr);
+    }
+
+    public String getMaxKey() {
+        if (tail.prev == head) return "";
+        return tail.prev.keys.iterator().next();
+    }
+
+    public String getMinKey() {
+        if (head.next == tail) return "";
+        return head.next.keys.iterator().next();
+    }
+
+    private void insertAfter(Bucket node, Bucket newNode) {
+        newNode.next = node.next;
+        newNode.prev = node;
+        node.next.prev = newNode;
+        node.next = newNode;
+    }
+
+    private void removeIfEmpty(Bucket node) {
+        if (node.keys.isEmpty()) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+    }
+}

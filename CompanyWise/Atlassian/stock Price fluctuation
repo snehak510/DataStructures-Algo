@@ -1,0 +1,257 @@
+2034. Stock Price Fluctuation 
+
+
+You are given a stream of records about a particular stock. Each record contains a timestamp and the corresponding price of the stock at that timestamp.
+
+Unfortunately due to the volatile nature of the stock market, the records do not come in order. Even worse, some records may be incorrect. Another record with the same timestamp may appear later in the stream correcting the price of the previous wrong record.
+
+Design an algorithm that:
+
+Updates the price of the stock at a particular timestamp, correcting the price from any previous records at the timestamp.
+Finds the latest price of the stock based on the current records. The latest price is the price at the latest timestamp recorded.
+Finds the maximum price the stock has been based on the current records.
+Finds the minimum price the stock has been based on the current records.
+Implement the StockPrice class:
+
+StockPrice() Initializes the object with no price records.
+void update(int timestamp, int price) Updates the price of the stock at the given timestamp.
+int current() Returns the latest price of the stock.
+int maximum() Returns the maximum price of the stock.
+int minimum() Returns the minimum price of the stock.
+ 
+
+Example 1:
+
+Input
+["StockPrice", "update", "update", "current", "maximum", "update", "maximum", "update", "minimum"]
+[[], [1, 10], [2, 5], [], [], [1, 3], [], [4, 2], []]
+Output
+[null, null, null, 5, 10, null, 5, null, 2]
+
+Explanation
+StockPrice stockPrice = new StockPrice();
+stockPrice.update(1, 10); // Timestamps are [1] with corresponding prices [10].
+stockPrice.update(2, 5);  // Timestamps are [1,2] with corresponding prices [10,5].
+stockPrice.current();     // return 5, the latest timestamp is 2 with the price being 5.
+stockPrice.maximum();     // return 10, the maximum price is 10 at timestamp 1.
+stockPrice.update(1, 3);  // The previous timestamp 1 had the wrong price, so it is updated to 3.
+                          // Timestamps are [1,2] with corresponding prices [3,5].
+stockPrice.maximum();     // return 5, the maximum price is 5 after the correction.
+stockPrice.update(4, 2);  // Timestamps are [1,2,4] with corresponding prices [3,5,2].
+stockPrice.minimum();     // return 2, the minimum price is 2 at timestamp 4.
+ 
+
+Constraints:
+
+1 <= timestamp, price <= 109
+At most 105 calls will be made in total to update, current, maximum, and minimum.
+current, maximum, and minimum will be called only after update has been called at least once.
+
+
+--------------------------------------------------------------
+
+
+class StockPrice {
+    TreeMap<Integer, Integer> record = new TreeMap<>();
+    TreeMap<Integer, Set<Integer>> vals = new TreeMap<>();
+
+    public void update(int timestamp, int price) {
+        if (record.containsKey(timestamp)) {
+            int prevPrice = record.get(timestamp);
+            Set<Integer> book = vals.get(prevPrice);
+            book.remove(timestamp);
+            if (book.isEmpty()) {
+                vals.remove(prevPrice);
+            }
+        }
+        vals.putIfAbsent(price, new HashSet<>());
+        vals.get(price).add(timestamp);
+        record.put(timestamp, price);
+    }
+
+    public int current() {
+        return record.lastEntry().getValue();
+    }
+
+    public int maximum() {
+        return vals.lastKey();
+    }
+
+    public int minimum() {
+        return vals.firstKey();
+    }
+}
+
+
+----------------------------------------------------------------------
+
+
+
+We use two TreeMaps to efficiently track stock prices.
+TreeMap<Integer, Integer> record = new TreeMap<>();
+TreeMap<Integer, Set<Integer>> vals = new TreeMap<>();
+
+
+1. Why two maps?
+- record — timestamp → price: Stores the latest price for every timestamp. lastEntry() gives the price at the largest timestamp.
+- vals — price → set of timestamps: Stores all timestamps currently associated with each price. Since prices are sorted, firstKey() gives the minimum and lastKey() gives the maximum.
+2. Why use a Set?
+Multiple timestamps can have the same price.
+
+For example:
+record: {1=100, 2=100, 3=50}
+
+vals:
+50  → {3}
+100 → {1, 2}
+
+
+A single integer value would lose one of the timestamps. A Set keeps them all.
+3. How does update() work?
+When updating a timestamp:
+1. If it already exists, retrieve its previous price.
+2. Remove the timestamp from the set associated with the previous price.
+3. If that set becomes empty, remove the old price key.
+4. Add the timestamp to the set for the new price.
+5. Update record with the new price.
+4. How do the query methods work?
+Method	Implementation	Purpose
+current()	record.lastEntry().getValue()	Price at the largest timestamp
+maximum()	vals.lastKey()	Highest current price
+minimum()	vals.firstKey()	Lowest current price
+
+5. Complexity
+Let \(N\) be the number of distinct timestamps.
+- Update: \(O(\log N)\)
+- Current: \(O(\log N)\) or better
+- Maximum / Minimum: \(O(\log N)\) or better
+- Space: \(O(N)\)
+Interview takeaway: record tracks prices by timestamp, while vals tracks timestamps by price. The Set handles duplicate prices, and the TreeMap keeps prices sorted so minimum and maximum queries are efficient.
+
+
+-------------------------------------------------------------------------------
+
+extensions
+
+deletion and history 
+
+
+history: Map<Integer, List<Integer>>
+
+Maps each timestamp to its sequence of recorded prices, preserving the order in which updates occurred.
+
+
+
+
+
+Delete
+- Remove the timestamp from record and get its current price.
+- Remove the timestamp from the corresponding set in vals.
+- If the set becomes empty, remove that price key from vals.
+- Do not delete its history.
+- Time complexity: \(O(\log N)\).
+2. Version History
+- Maintain a HashMap<Integer, List<Integer>> mapping each timestamp to all prices ever assigned to it.
+- Whenever update() is called, append the new price to the timestamp's history.
+- getHistory(timestamp) returns the list of previously assigned prices.
+- Deleting a timestamp removes only its active record; its history remains available.
+
+
+
+
+
+
+
+
+
+
+
+import java.util.*;
+
+public class StockPrice {
+    // timestamp -> current price
+    private final TreeMap<Integer, Integer> record = new TreeMap<>();
+
+    // price -> timestamps currently having that price
+    private final TreeMap<Integer, Set<Integer>> vals = new TreeMap<>();
+
+    // timestamp -> all prices recorded for that timestamp
+    private final Map<Integer, List<Integer>> history = new HashMap<>();
+
+    public void update(int timestamp, int price) {
+        // Remove the old price from the active price index
+        if (record.containsKey(timestamp)) {
+            int prevPrice = record.get(timestamp);
+
+            Set<Integer> timestamps = vals.get(prevPrice);
+            timestamps.remove(timestamp);
+
+            if (timestamps.isEmpty()) {
+                vals.remove(prevPrice);
+            }
+        }
+
+        // Add the new current price
+        vals.computeIfAbsent(price, p -> new HashSet<>())
+            .add(timestamp);
+
+        record.put(timestamp, price);
+
+        // Preserve version history
+        history.computeIfAbsent(timestamp, t -> new ArrayList<>())
+               .add(price);
+    }
+
+    public boolean delete(int timestamp) {
+        // Nothing to delete if timestamp is not active
+        if (!record.containsKey(timestamp)) {
+            return false;
+        }
+
+        int price = record.remove(timestamp);
+
+        Set<Integer> timestamps = vals.get(price);
+        timestamps.remove(timestamp);
+
+        if (timestamps.isEmpty()) {
+            vals.remove(price);
+        }
+
+        // Do not delete history
+        return true;
+    }
+
+    public int current() {
+        if (record.isEmpty()) {
+            throw new NoSuchElementException("No active stock prices");
+        }
+        return record.lastEntry().getValue();
+    }
+
+    public int maximum() {
+        if (vals.isEmpty()) {
+            throw new NoSuchElementException("No active stock prices");
+        }
+        return vals.lastKey();
+    }
+
+    public int minimum() {
+        if (vals.isEmpty()) {
+            throw new NoSuchElementException("No active stock prices");
+        }
+        return vals.firstKey();
+    }
+
+    public List<Integer> getHistory(int timestamp) {
+        List<Integer> versions = history.get(timestamp);
+
+        if (versions == null) {
+            return Collections.emptyList();
+        }
+
+        // Prevent callers from modifying internal history
+        return Collections.unmodifiableList(
+            new ArrayList<>(versions)
+        );
+    }
+}
